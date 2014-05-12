@@ -1,0 +1,6 @@
+DefaultVendor=0x12d1
+DefaultProduct=0x1446
+
+MessageContent="55534243123456780000000000000011062000000100000000000000000000"
+NeedResponse=1
+CheckResponse=10

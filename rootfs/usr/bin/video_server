@@ -1,0 +1,2 @@
+#!/bin/sh
+mjpg_streamer -i "input_uvc.so -d /dev/video2 -f 10" -o "/lib/output_http.so -w /www"&

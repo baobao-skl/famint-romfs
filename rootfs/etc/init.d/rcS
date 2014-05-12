@@ -1,0 +1,89 @@
+#! /bin/sh
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+runlevel=S
+prelevel=N
+umask 022
+
+videoDriverFile="/dev/video2"
+
+export PATH runlevel prelevel
+
+mount -a
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
+mount -t usbfs  usbfs /proc/bus/usb
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+
+mdev -s
+mkdir -p /var/lock
+mkdir -p /var/empty
+mkdir -p /var/run
+mkdir -p /var/tmp
+
+hwclock -s
+
+ifconfig eth0 up
+ifconfig eth0 192.168.0.10 netmask 255.255.255.0
+
+route add default gw 192.168.0.1
+/bin/hostname -F /etc/sysconfig/HOSTNAME
+mkdir /dev/snd  
+ln /dev/controlC0 /dev/snd/controlC0  
+ln /dev/pcmC0D0c /dev/snd/pcmC0D0c  
+ln /dev/pcmC0D0p /dev/snd/pcmC0D0p  
+ln /dev/timer /dev/snd/timer 
+
+/etc/rc.d/init.d/alsaconf start
+
+hwclock -s
+
+#/usr/bin/qtconfig&
+
+remote_login&
+
+if [ ! -c "/dev/ttyUSB0" ]; then
+	usb-modeswitch -c /etc/usb_modeswitch.d/12d1\:1446 
+fi
+sleep 1
+#unix_domain_socket_sendmsg &
+
+echo "" > /dev/tty1
+echo "Start FTP Server..." > /dev/tty1
+vsftpd /etc/vsftpd/vsftpd.conf&
+
+echo "" > /dev/tty1
+if [ -c "$videoDriverFile" ]; then
+#echo "Start Video Server..." > /dev/tty1
+#mjpg_streamer -i "input_uvc.so -d /dev/video2 -f 10" -o "/lib/output_http.so -w /www"&
+video_server
+else
+echo "no video camera found!" > /dev/tty1
+fi
+sleep 1
+
+cd /usr/bin
+goahead &
+cd /
+
+echo "" > /dev/tty1
+echo "Start remote music Server..." > /dev/tty1
+music_control&
+
+insmod /driver/nRF24L01.ko
+insmod /driver/leddriver.ko
+echo "" > /dev/tty1
+echo "Start data transport Server..." > /dev/tty1
+insmod /driver/dht11.ko
+sleep 1
+tcp_data_transport&
+dev_manage&
+echo "" > /dev/tty1
+echo "Start Smart-household GUI,Please wait..." > /dev/tty1
+
+insmod /driver/rt5370.ko
+#ifconfig wlan0 up
+#ifconfig eth0 down
+#ifconfig wlan0 192.128.0.11
+#wpa_supplicant -Dwext -iwlan0 -c/etc/wpa_supplicant.conf&
+#ifconfig
