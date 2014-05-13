@@ -23,10 +23,10 @@ mkdir -p /var/tmp
 
 hwclock -s
 
-ifconfig eth0 up
-ifconfig eth0 192.168.0.10 netmask 255.255.255.0
+#ifconfig eth0 up
+#ifconfig eth0 192.168.0.10 netmask 255.255.255.0
 
-route add default gw 192.168.0.1
+#route add default gw 192.168.0.1
 /bin/hostname -F /etc/sysconfig/HOSTNAME
 mkdir /dev/snd  
 ln /dev/controlC0 /dev/snd/controlC0  
@@ -42,10 +42,12 @@ hwclock -s
 
 remote_login&
 
+insmod /driver/rt5370sta.ko
+
 if [ ! -c "/dev/ttyUSB0" ]; then
 	usb-modeswitch -c /etc/usb_modeswitch.d/12d1\:1446 
 fi
-sleep 1
+#sleep 1
 #unix_domain_socket_sendmsg &
 
 echo "" > /dev/tty1
@@ -60,7 +62,7 @@ video_server
 else
 echo "no video camera found!" > /dev/tty1
 fi
-sleep 1
+#sleep 1
 
 cd /usr/bin
 goahead &
@@ -70,18 +72,18 @@ echo "" > /dev/tty1
 echo "Start remote music Server..." > /dev/tty1
 music_control&
 
-insmod /driver/nRF24L01.ko
+#insmod /driver/nRF24L01.ko
 insmod /driver/leddriver.ko
 echo "" > /dev/tty1
 echo "Start data transport Server..." > /dev/tty1
 insmod /driver/dht11.ko
-sleep 1
+#sleep 1
 tcp_data_transport&
 dev_manage&
-echo "" > /dev/tty1
-echo "Start Smart-household GUI,Please wait..." > /dev/tty1
+#echo "" > /dev/tty1
+#echo "Start Smart-household GUI,Please wait..." > /dev/tty1
 
-insmod /driver/rt5370.ko
+#insmod /driver/rt5370sta.ko
 #ifconfig wlan0 up
 #ifconfig eth0 down
 #ifconfig wlan0 192.128.0.11
