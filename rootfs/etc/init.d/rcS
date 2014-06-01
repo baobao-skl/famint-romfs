@@ -52,6 +52,7 @@ fi
 
 echo "" > /dev/tty1
 echo "Start FTP Server..." > /dev/tty1
+chmod 775 /usr/ftp
 vsftpd /etc/vsftpd/vsftpd.conf&
 
 echo "" > /dev/tty1
