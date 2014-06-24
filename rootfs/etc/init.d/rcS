@@ -23,10 +23,6 @@ mkdir -p /var/tmp
 mkdir -p /var/log
 hwclock -s
 
-ifconfig eth0 up
-ifconfig eth0 192.168.0.10 netmask 255.255.255.0
-
-route add default gw 192.168.0.1
 /bin/hostname -F /etc/sysconfig/HOSTNAME
 mkdir /dev/snd  
 ln /dev/controlC0 /dev/snd/controlC0  
@@ -37,57 +33,34 @@ ln /dev/timer /dev/snd/timer
 /etc/rc.d/init.d/alsaconf start
 
 hwclock -s
-
-#/usr/bin/qtconfig&
-
+udhcpc -i eth0&
+net_manager&
 remote_login&
 
 insmod /driver/rt5370sta.ko
+insmod /driver/leddriver.ko
+insmod /driver/dht11.ko
 
 if [ ! -c "/dev/ttyUSB0" ]; then
 	usb-modeswitch -c /etc/usb_modeswitch.d/12d1\:1446 
 fi
-#sleep 1
-#unix_domain_socket_sendmsg &
 
-#echo "" > /dev/tty1
-#echo "Start FTP Server..." > /dev/tty1
+music_control&
+tcp_data_transport&
+dev_manage&
+
 chmod 775 /usr/ftp
 chmod 777 /usr/ftp/music
 vsftpd /etc/vsftpd/vsftpd.conf&
-
-#echo "" > /dev/tty1
-if [ -c "$videoDriverFile" ]; then
-#echo "Start Video Server..." > /dev/tty1
-#mjpg_streamer -i "input_uvc.so -d /dev/video2 -f 10" -o "/lib/output_http.so -w /www"&
-video_server
-else
-echo "no video camera found!" > /dev/tty1
-fi
-#sleep 1
 
 cd /usr/bin
 goahead &
 cd /
 
-echo "" > /dev/tty1
-echo "Start remote music Server..." > /dev/tty1
-music_control&
+if [ -c "$videoDriverFile" ]; then
+video_server
+else
+echo "no video camera found!" > /dev/tty1
+fi
 
-#insmod /driver/nRF24L01.ko
-insmod /driver/leddriver.ko
-#echo "" > /dev/tty1
-#echo "Start data transport Server..." > /dev/tty1
-insmod /driver/dht11.ko
-#sleep 1
-tcp_data_transport&
-dev_manage&
-#echo "" > /dev/tty1
-#echo "Start Smart-household GUI,Please wait..." > /dev/tty1
 
-#insmod /driver/rt5370sta.ko
-#ifconfig wlan0 up
-#ifconfig eth0 down
-#ifconfig wlan0 192.128.0.11
-#wpa_supplicant -Dwext -iwlan0 -c/etc/wpa_supplicant.conf&
-#ifconfig
